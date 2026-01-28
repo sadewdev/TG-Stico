@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TG Stico | macOS Style Converter</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+    <script src="https://unpkg.com/fflate@0.8.0/umd/index.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600&family=Inter:wght@400;500;600&display=swap');
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif;
+            background: url('https://images.unsplash.com/photo-1621360841013-c768371e93cf?q=80&w=2560&auto=format&fit=crop') no-repeat center center fixed;
+            background-size: cover;
+            color: #1d1d1f;
+            overflow: hidden; /* App-like feel */
+        }
+
+        /* macOS Glass Window */
+        .mac-window {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(25px) saturate(180%);
+            -webkit-backdrop-filter: blur(25px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0,0,0,0.05);
+            border-radius: 18px;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+
+        /* Sidebar Glass */
+        .sidebar {
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(0,0,0,0.05);
+        }
+
+        /* Nav Items */
+        .nav-item {
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-radius: 8px;
+        }
+
+        .nav-item:hover {
+            background: rgba(0,0,0,0.05);
+        }
+
+        .nav-item.active {
+            background: rgba(0, 122, 255, 0.15);
+            color: #007AFF;
+        }
+
+        .nav-item.active i {
+            color: #007AFF;
+        }
+
+        /* Drop Zone */
+        .drop-zone {
+            border: 2px dashed #d1d5db;
+            background: rgba(255, 255, 255, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        .drop-zone:hover, .drop-zone.dragover {
+            border-color: #007AFF;
+            background: rgba(0, 122, 255, 0.05);
+            transform: scale(1.01);
+        }
+
+        /* macOS Buttons */
+        .btn-mac {
+            background: #007AFF;
+            color: white;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.2s;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .btn-mac:hover {
+            background: #006add;
+        }
+
+        .btn-mac:active {
+            transform: scale(0.98);
+        }
+
+        .traffic-light {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 6px;
+        }
+
+        /* Animations */
+        .page-content {
+            display: none;
+            animation: fadeIn 0.3s ease-out;
+        }
+        .page-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="h-screen w-screen flex items-center justify-center p-4 sm:p-8">
+
+    <!-- macOS Window Container -->
+    <div class="mac-window w-full max-w-5xl h-[85vh] flex flex-col md:flex-row shadow-2xl relative">
+        
+        <!-- Sidebar -->
+        <aside class="sidebar w-full md:w-64 flex flex-col p-4 z-10">
+            <!-- Traffic Lights -->
+            <div class="flex items-center mb-8 px-2 mt-1">
+                <span class="traffic-light bg-red-500 border border-red-600/20"></span>
+                <span class="traffic-light bg-yellow-500 border border-yellow-600/20"></span>
+                <span class="traffic-light bg-green-500 border border-green-600/20"></span>
+            </div>
+
+            <!-- Profile Info -->
+            <div class="px-2 mb-8 flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center text-lg shadow-md">
+                    <i class="fa-solid fa-cube"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-gray-800 text-lg leading-tight">TG Stico</h1>
+                    <p class="text-xs text-gray-500 font-medium">v2.0 • macOS Edition</p>
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <nav class="flex-1 space-y-1">
+                <div onclick="switchTab('converter')" id="tab-converter" class="nav-item active flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-700">
+                    <i class="fa-solid fa-wand-magic-sparkles w-5 text-gray-400 text-center"></i>
+                    Converter
+                </div>
+                <div onclick="switchTab('guide')" id="tab-guide" class="nav-item flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-700">
+                    <i class="fa-regular fa-life-ring w-5 text-gray-400 text-center"></i>
+                    How to Use
+                </div>
+                <a href="https://github.com/SadewDev" target="_blank" class="nav-item flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-700 mt-8">
+                    <i class="fa-brands fa-github w-5 text-gray-400 text-center"></i>
+                    Sadew Dev
+                </a>
+            </nav>
+
+            <div class="mt-auto pt-4 border-t border-gray-200/50">
+                <p class="text-[10px] text-center text-gray-400 font-medium">Designed with ❤️ by Sadew</p>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 relative bg-white/40 overflow-y-auto">
+            
+            <!-- 1. CONVERTER TAB -->
+            <div id="page-converter" class="page-content active h-full p-6 md:p-10 flex flex-col">
+                <div class="mb-8">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">Converter Studio</h2>
+                    <p class="text-gray-500 text-sm">Drag & drop your Telegram .tgs files to instantly convert them to Lottie JSON.</p>
+                </div>
+
+                <!-- Drop Zone -->
+                <div id="dropZone" class="drop-zone flex-1 min-h-[300px] rounded-2xl flex flex-col items-center justify-center cursor-pointer text-center p-8 relative group">
+                    <input type="file" id="fileInput" accept=".tgs" class="hidden">
+                    
+                    <div class="w-20 h-20 bg-white rounded-2xl shadow-sm flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                        <i class="fa-solid fa-cloud-arrow-up text-4xl text-[#007AFF]"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-700 mb-2">Drop .tgs file here</h3>
+                    <p class="text-gray-400 text-sm max-w-xs mx-auto">Click to browse or drag file from your desktop folder</p>
+                </div>
+
+                <!-- Result Panel (Hidden) -->
+                <div id="resultSection" class="hidden flex-1 h-full flex flex-col md:flex-row gap-8 items-center justify-center animate-fade-in">
+                    <!-- Preview Box -->
+                    <div class="w-64 h-64 bg-white rounded-2xl shadow-sm border border-gray-100 flex items-center justify-center p-4 relative">
+                        <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/graphy.png')] opacity-10"></div>
+                        <lottie-player id="lottiePreview" background="transparent" speed="1" style="width: 100%; height: 100%;" loop autoplay></lottie-player>
+                    </div>
+
+                    <!-- Details & Actions -->
+                    <div class="flex flex-col gap-4 w-full max-w-xs">
+                        <div>
+                            <span class="inline-block px-2 py-1 rounded text-[10px] font-bold bg-green-100 text-green-600 mb-2">CONVERSION SUCCESS</span>
+                            <h3 id="fileName" class="text-lg font-bold text-gray-800 truncate">sticker.tgs</h3>
+                            <p id="fileSize" class="text-xs text-gray-500">12 KB</p>
+                        </div>
+                        
+                        <div class="space-y-3 pt-4">
+                            <button id="downloadBtn" class="btn-mac w-full py-3 flex items-center justify-center gap-2 text-sm shadow-lg shadow-blue-500/20">
+                                <i class="fa-solid fa-download"></i> Download JSON
+                            </button>
+                            <button onclick="resetConverter()" class="w-full py-2.5 text-sm font-medium text-gray-500 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                                Convert Another
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. GUIDE TAB -->
+            <div id="page-guide" class="page-content h-full p-6 md:p-10 overflow-y-auto">
+                <div class="mb-8">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">How to get .tgs files?</h2>
+                    <p class="text-gray-500 text-sm">Telegram stickers are protected. Here is the easiest way to download them.</p>
+                </div>
+
+                <div class="grid gap-6">
+                    <!-- Method 1 -->
+                    <div class="bg-white/60 p-6 rounded-2xl border border-white/50 shadow-sm">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-8 h-8 rounded-full bg-blue-100 text-[#007AFF] flex items-center justify-center font-bold text-sm">1</div>
+                            <h3 class="font-semibold text-gray-800">Use Telegram Desktop (PC/Mac)</h3>
+                        </div>
+                        <ul class="space-y-3 text-sm text-gray-600 ml-3">
+                            <li class="flex gap-2"><i class="fa-solid fa-check text-green-500 mt-1"></i> Open Telegram Desktop app.</li>
+                            <li class="flex gap-2"><i class="fa-solid fa-check text-green-500 mt-1"></i> Find the sticker you want in a chat.</li>
+                            <li class="flex gap-2"><i class="fa-solid fa-check text-green-500 mt-1"></i> <strong>Right Click</strong> on the sticker.</li>
+                            <li class="flex gap-2"><i class="fa-solid fa-check text-green-500 mt-1"></i> Select <strong>"Save Sticker As..."</strong>.</li>
+                            <li class="flex gap-2"><i class="fa-solid fa-check text-green-500 mt-1"></i> It will download as a <code>.tgs</code> file.</li>
+                        </ul>
+                    </div>
+
+                    <!-- Method 2 -->
+                    <div class="bg-white/60 p-6 rounded-2xl border border-white/50 shadow-sm">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center font-bold text-sm">2</div>
+                            <h3 class="font-semibold text-gray-800">Use a Download Bot (Mobile/PC)</h3>
+                        </div>
+                        <p class="text-sm text-gray-500 mb-3">If you are on mobile or can't save directly:</p>
+                        <ul class="space-y-3 text-sm text-gray-600 ml-3">
+                            <li class="flex gap-2"><i class="fa-solid fa-robot text-purple-400 mt-1"></i> Search for <strong>@StickerDownloadBot</strong> on Telegram.</li>
+                            <li class="flex gap-2"><i class="fa-solid fa-paper-plane text-purple-400 mt-1"></i> Send the sticker you want to the bot.</li>
+                            <li class="flex gap-2"><i class="fa-solid fa-file-arrow-down text-purple-400 mt-1"></i> The bot will reply with the <code>.tgs</code> file.</li>
+                            <li class="flex gap-2"><i class="fa-solid fa-download text-purple-400 mt-1"></i> Download that file and upload it here.</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="mt-4 p-4 bg-yellow-50 border border-yellow-100 rounded-xl flex items-start gap-3">
+                        <i class="fa-solid fa-lightbulb text-yellow-500 mt-0.5"></i>
+                        <p class="text-xs text-yellow-700 leading-relaxed">
+                            <strong>Pro Tip:</strong> You usually cannot drag a sticker directly from the Telegram chat window into the browser. You must save it as a file to your computer first!
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Logic -->
+    <script>
+        // Tab Switching Logic
+        function switchTab(tabId) {
+            // Remove active class from nav items
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.page-content').forEach(el => el.classList.remove('active'));
+
+            // Add active class
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+            document.getElementById(`page-${tabId}`).classList.add('active');
+        }
+
+        // Converter Logic
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const resultSection = document.getElementById('resultSection');
+        const lottiePreview = document.getElementById('lottiePreview');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const fileNameDisplay = document.getElementById('fileName');
+        const fileSizeDisplay = document.getElementById('fileSize');
+        let currentJsonData = null;
+
+        dropZone.addEventListener('click', () => fileInput.click());
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            if (e.dataTransfer.files.length) processFile(e.dataTransfer.files[0]);
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length) processFile(e.target.files[0]);
+        });
+
+        function processFile(file) {
+            if (!file.name.endsWith('.tgs')) {
+                alert("Please upload a valid .tgs file!");
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                try {
+                    const uint8Array = new Uint8Array(event.target.result);
+                    const decompressed = fflate.gunzipSync(uint8Array);
+                    const jsonString = new TextDecoder().decode(decompressed);
+                    const jsonData = JSON.parse(jsonString);
+
+                    currentJsonData = jsonData;
+                    showSuccess(file, jsonData);
+                } catch (error) {
+                    console.error(error);
+                    alert("Error parsing file. It might be corrupted.");
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function showSuccess(file, jsonData) {
+            const blob = new Blob([JSON.stringify(jsonData)], {type: "application/json"});
+            const url = URL.createObjectURL(blob);
+            lottiePreview.load(url);
+
+            fileNameDisplay.textContent = file.name.replace('.tgs', '.json');
+            fileSizeDisplay.textContent = (file.size / 1024).toFixed(1) + ' KB';
+
+            dropZone.classList.add('hidden');
+            resultSection.classList.remove('hidden');
+            resultSection.classList.add('flex');
+        }
+
+        function resetConverter() {
+            currentJsonData = null;
+            fileInput.value = '';
+            resultSection.classList.add('hidden');
+            resultSection.classList.remove('flex');
+            dropZone.classList.remove('hidden');
+        }
+
+        downloadBtn.addEventListener('click', () => {
+            if (!currentJsonData) return;
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(currentJsonData));
+            const dlAnchorElem = document.createElement('a');
+            dlAnchorElem.setAttribute("href", dataStr);
+            dlAnchorElem.setAttribute("download", fileNameDisplay.textContent);
+            document.body.appendChild(dlAnchorElem);
+            dlAnchorElem.click();
+            dlAnchorElem.remove();
+        });
+    </script>
+</body>
+</html>
